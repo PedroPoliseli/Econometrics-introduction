@@ -1,0 +1,209 @@
+---
+title: "Regressão Linear Simples"
+author: "Pedro H. Poliseli Correa"
+date: '2022-08-23'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+## Bibliotecas
+```{r, message=FALSE, error=FALSE, warning=FALSE}
+library(stats)
+library(ggplot2)
+library(lmtest)
+library(skedastic)
+library(plm)
+
+```
+
+
+## Modelo
+
+Utilizaremos o metodo de minimos quadrados ordinarios para estimar o modelo de regressao linear.
+
+
+Patindo do seguinte modelo populacional da seguinte forma.
+
+$$\begin{equation}
+   y_i =  \alpha + \beta x_i + u_i 
+\end{equation}$$
+
+
+Onde: 
+
+$y$ é a variavel dependente
+
+$x$ é a variavel independente
+
+$\alpha$ é o intecepto 
+
+$\beta$ é o coeficiente
+
+$u$ é o erro
+
+
+Podemos encontrar modelo amostral de tamanho $n$:
+
+$$\begin{equation}
+   y_i =  \hat\alpha + \hat\beta x_i + \hat e_i 
+\end{equation}$$
+
+Onde:
+
+$\hat\alpha$ é o estimador do intecepto 
+
+$\hat\beta$ é o estimador do coeficiente
+
+$e$ é o residuo
+
+
+# Derivando o estimador de Minimos Quadrados Ordinários
+
+Utilizamos de minimos quadrados dos residuos para estimar nosso modelo.
+
+$$\begin{equation}
+  e_i = y_i - \hat\alpha - \hat\beta x_i
+\end{equation}$$
+
+$$\begin{equation}
+  min S = min\displaystyle\sum_{i=1} ^{n} e_i^2 = min\displaystyle\sum_{i=1} ^{n} (y_i - \hat\alpha - \hat\beta x_i)
+\end{equation}$$
+
+Derivando as condições de primeira ordem temos:
+
+Derivada parcial em $\alpha$
+$$\begin{equation}
+  {\partial{S}}/{\partial{\hat\alpha}} = 0
+\end{equation}$$
+
+$$\begin{equation}
+  -2 \displaystyle\sum_{i=1} ^{n} (y_i - \hat\alpha - \hat\beta x_i) = 0
+\end{equation}$$
+
+Multiplicamos dos dois lados pela média de x
+$$\begin{equation}
+  \tag{I}
+  -2 \displaystyle\sum_{i=1} ^{n} \bar x  (y_i - \hat\alpha - \hat\beta x_i) = 0
+\end{equation}$$
+
+
+Temos $n$ observações podemos substituir os dois lados da equação por $2n$ temos o nosso estimador de $\alpha$
+
+$$\begin{equation}
+   \hat \alpha = \bar y - \beta \bar x 
+\end{equation}$$
+
+
+Derivada parcial em $\beta$
+
+$$\begin{equation}
+  {\partial{S}}/{\partial{\hat\beta}} = 0
+\end{equation}$$
+
+
+$$\begin{equation}
+ \tag{II}
+  -2 \displaystyle\sum_{i=1} ^{n} x_i (y_i - \hat\alpha - \hat\beta x_i) = 0
+\end{equation}$$
+
+
+Subtraindo $(I) - (II)$, temos:
+$$\begin{equation}
+  \displaystyle\sum_{i=1} ^{n}(x_i-\bar x) (y_i - \hat\alpha - \hat\beta x_i) = 0
+\end{equation}$$
+
+Substituindo $\alpha$:
+
+$$\begin{equation}
+ \displaystyle\sum_{i=1} ^{n}(x_i-\bar x) (y_i - \hat y + \hat\beta \bar x - \hat\beta x_i) = 0
+\end{equation}$$
+
+
+Encontramos o estimador de $\beta$
+
+$$\begin{equation}
+\hat\beta = \displaystyle\sum_{i=1} ^{n}(x_i-\bar x) (y_i - \hat y) / \displaystyle\sum_{i=1} ^{n} (x_i - \bar x)
+\end{equation}$$
+
+
+Escrevendo de outra forma:
+
+
+$$\begin{equation}
+  \hat\beta = Cov(x,y)/Var(x)
+\end{equation}$$
+
+
+## Aplicação
+
+Utilizaremos a base de dados nativa do R mtcars para mostrar possiveis aplicações de regressões lineares.
+
+
+Bibliotecas
+```{r, message=FALSE, error=FALSE, warning=FALSE}
+head(mtcars)
+
+```
+Vamos fazer uma regressão de milhas por galão (mpg) em horse power (hp).
+
+Podemos estimar os parametros do modelo pela derivação que fizemos acima.
+```{r, message=FALSE, error=FALSE, warning=FALSE}
+(beta.m1 <- cov(mtcars$mpg,mtcars$hp)/var(mtcars$hp))
+
+(alpha.m1 <- mean(mtcars$mpg) - beta.m1 * mean(mtcars$hp))
+
+```
+
+Podemos tambem usar o pacote plm para fazer a regressão.
+```{r, message=FALSE, error=FALSE, warning=FALSE}
+reg_mpg.hp <- lm(data = mtcars, mpg~hp)
+summary(reg_mpg.hp)
+
+```
+Os valores dos estimadores de $\alpha$ e $\beta$ são os mesmos fazendo das duas formas.
+
+
+
+Podemos plotar a reta de $\hat y$:
+
+$$\begin{equation}
+ \hat y = \hat \beta x
+\end{equation}$$
+```{r, message=FALSE, error=FALSE, warning=FALSE}
+
+ggplot(mtcars, aes(hp,mpg))+
+  geom_point()+
+  geom_smooth(method = "lm", se = FALSE)
+
+```
+
+Observamos uma inclinação negativa pois o $\beta$ é negativo. 
+
+
+
+
+
+
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
